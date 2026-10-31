@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>لوحة الإدارة — دفعة 24</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+:root{--navy:#14284B;--blue:#2B6CF0;--bg:#F1F5FC;--line:#D8E1F2;--muted:#5B6B8C;--bad:#C0264B;--ok:#1B8A55}
+body{margin:0;font-family:'Cairo',Tahoma,sans-serif;background:var(--bg);color:var(--navy);line-height:1.7}
+button,input,select,textarea{font:inherit;color:inherit}
+header.bar{background:var(--navy);color:#fff;padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:5}
+header.bar b{font-size:18px}
+header.bar .who{margin-inline-start:auto;font-size:14px;opacity:.9}
+.wrap{max-width:1100px;margin:0 auto;padding:22px 16px 80px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px}
+.login{max-width:400px;margin:70px auto}
+.login h1{margin:0 0 4px;font-size:24px}
+.login p{margin:0 0 14px;color:var(--muted)}
+label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:12px 0 4px}
+input[type=text],input[type=email],input[type=password],input[type=url],select,textarea{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff}
+textarea{min-height:84px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:3px solid #BBD0FF;border-color:var(--blue)}
+.btn{border:0;border-radius:10px;padding:9px 18px;font-weight:600;cursor:pointer;background:var(--blue);color:#fff}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:#fff;color:var(--navy);border:1.5px solid var(--line)}
+.btn.bad{background:var(--bad)}
+.btn.sm{padding:5px 12px;font-size:13px}
+header .btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.4)}
+.tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.tabs button{padding:8px 18px;border-radius:999px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
+.tabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.layout{display:grid;grid-template-columns:230px 1fr;gap:18px;align-items:start}
+.side{display:flex;flex-direction:column;gap:6px;position:sticky;top:76px}
+.side button{text-align:start;padding:10px 14px;border-radius:12px;border:1.5px solid var(--line);background:#fff;cursor:pointer;font-weight:600}
+.side button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.side button.off{opacity:.55}
+.h2{margin:0 0 4px;font-size:20px}
+.muted{color:var(--muted);font-size:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row>*{flex:1 1 180px}
+.row>.fit{flex:0 0 auto}
+.blk{margin-top:16px;border-top:5px solid var(--blue)}
+.blk.hid{border-top-color:#AEB9D1;opacity:.85}
+.blk .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.badge{padding:3px 12px;border-radius:999px;background:#E3ECFF;color:var(--blue);font-size:13px;font-weight:600}
+.item{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;padding:10px;border:1px dashed var(--line);border-radius:12px;margin-top:8px;background:#FAFCFF}
+.item.n{grid-template-columns:1fr 1fr auto}
+.item .full{grid-column:1/-1}
+.item label{margin-top:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.tools .sp{flex:1}
+.chk{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;margin:0}
+.chk input{width:18px;height:18px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 8px;border-bottom:1px solid var(--line);text-align:start;vertical-align:middle;font-size:14px}
+th{color:var(--muted);font-weight:600}
+td select{min-width:150px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:11px 22px;border-radius:12px;font-weight:600;z-index:20;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.toast.err{background:var(--bad)}
+.note{padding:14px 16px;border-radius:12px;background:#FFF6DD;border:1px solid #F0DA9A;color:#6B5200;margin-top:14px}
+.err{color:var(--bad);font-size:14px;margin-top:10px;min-height:1.4em}
+@media(max-width:760px){.layout{grid-template-columns:1fr}.side{position:static;flex-direction:row;flex-wrap:wrap}.item{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// إعدادات قاعدة البيانات (Supabase): Project URL و anon public key فقط
+window.B24_CONFIG = { SUPABASE_URL: "https://hkabaazydlrfslsjgeyj.supabase.co", SUPABASE_ANON_KEY: "sb_publishable_aV6GzWwOKkaUgeCoKOXFpg_O26sUkDG" };
+</script>
+<script>
+(function () {
+  'use strict';
+  var root = document.getElementById('root');
+  var CFG = window.B24_CONFIG || {};
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  var TYPES = { members: 'أعضاء / أسماء', news: 'أخبار ورسائل', links: 'روابط', text: 'نص حر' };
+  var ICONS = { people: 'أشخاص', bubble: 'رسالة', star: 'نجمة', book: 'كتاب', link: 'رابط', calendar: 'تقويم', bell: 'جرس', bulb: 'فكرة', cap: 'تخرج', pencil: 'قلم', coin: 'عملة', bars: 'مخطط', wallet: 'محفظة', soccer: 'كرة قدم', basket: 'كرة سلة', tennis: 'تنس', quill: 'ريشة', heart: 'قلب', camera: 'كاميرا', play: 'تشغيل', mic: 'ميكروفون', shield: 'درع', gear: 'ترس', crown: 'تاج' };
+  var DEFICON = { members: 'people', news: 'bubble', links: 'link', text: 'star' };
+  var KINDS = { academic: 'أكاديمية', finance: 'مالية', sports: 'رياضية (أخضر)', cultural: 'ثقافية', social: 'اجتماعية', media: 'إعلامية', general: 'عامة', president: 'الرئيس' };
+
+  if (!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY || !window.supabase) {
+    root.innerHTML = '<div class="card login"><h1>لوحة الإدارة</h1><p>لم يتم ربط قاعدة البيانات بعد. ضع رابط المشروع والمفتاح العام في أول الملف (B24_CONFIG).</p></div>';
+    return;
+  }
+  var sb = window.supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+
+  var S = { me: null, email: '', amanat: [], sel: null, blocks: [], tab: 'amanat', users: [], busy: false };
+
+  function toast(msg, bad) {
+    var old = document.querySelector('.toast'); if (old) old.remove();
+    var t = document.createElement('div');
+    t.className = 'toast' + (bad ? ' err' : ''); t.textContent = msg; t.setAttribute('role', 'status');
+    document.body.appendChild(t);
+    setTimeout(function () { t.remove(); }, 3200);
+  }
+  function fail(e) { toast('تعذّر: ' + ((e && e.message) || e), true); }
+
+  /* ---------- الدخول ---------- */
+  function showLogin(msg) {
+    root.innerHTML =
+      '<div class="card login"><h1>لوحة الإدارة</h1><p>دفعة 24 — دخول الأمناء والإدارة</p>' +
+      '<form id="lf"><label for="em">البريد الإلكتروني</label><input id="em" type="email" autocomplete="username" required dir="ltr">' +
+      '<label for="pw">كلمة السر</label><input id="pw" type="password" autocomplete="current-password" required dir="ltr">' +
+      '<div class="err" id="le">' + esc(msg || '') + '</div>' +
+      '<button class="btn" type="submit" style="width:100%;margin-top:6px">دخول</button></form></div>';
+    document.getElementById('lf').onsubmit = function (e) {
+      e.preventDefault();
+      var btn = e.target.querySelector('button'); btn.disabled = true;
+      sb.auth.signInWithPassword({ email: document.getElementById('em').value.trim(), password: document.getElementById('pw').value })
+        .then(function (r) {
+          if (r.error) { document.getElementById('le').textContent = 'البريد أو كلمة السر غير صحيحة'; btn.disabled = false; return; }
+          boot();
+        });
+    };
+  }
+
+  function boot() {
+    sb.auth.getSession().then(function (r) {
+      var s = r.data && r.data.session;
+      if (!s) return showLogin();
+      S.email = s.user.email;
+      return sb.from('profiles').select('*').eq('id', s.user.id).maybeSingle().then(function (p) {
+        if (p.error) throw p.error;
+        S.me = p.data;
+        if (!S.me) return renderShell('<div class="card"><h2 class="h2">حسابك غير مفعّل</h2><p class="muted">تواصل مع مدير الدفعة.</p></div>');
+        return sb.from('amanat').select('*').order('sort').then(function (a) {
+          if (a.error) throw a.error;
+          S.amanat = a.data;
+          if (S.me.role === 'super') { S.sel = S.amanat.length ? S.amanat[0].id : null; }
+          else { S.amanat = S.amanat.filter(function (x) { return x.id === S.me.amana_id; }); S.sel = S.me.amana_id; }
+          return loadBlocks().then(render);
+        });
+      });
+    }).catch(fail);
+  }
+
+  function loadBlocks() {
+    if (!S.sel) { S.blocks = []; return Promise.resolve(); }
+    return sb.from('blocks').select('*').eq('amana_id', S.sel).order('sort').then(function (r) {
+      if (r.error) throw r.error;
+      S.blocks = r.data.map(function (b) { b.content = b.content || {}; if (b.type === 'text') { b.content.text = b.content.text || ''; } else { b.content.items = Array.isArray(b.content.items) ? b.content.items : []; } return b; });
+    });
+  }
+
+  /* ---------- الواجهة ---------- */
+  function renderShell(inner) {
+    var isSuper = S.me && S.me.role === 'super';
+    root.innerHTML =
+      '<header class="bar"><b>لوحة إدارة دفعة 24</b><span class="who">' + esc(S.email) + ' — ' + (isSuper ? 'المدير العام' : 'أمين') + '</span>' +
+      '<button class="btn ghost sm" data-act="logout">خروج</button></header><div class="wrap">' + inner + '</div>';
+  }
+
+  function render() {
+    var isSuper = S.me.role === 'super';
+    var h = '';
+    if (!isSuper && !S.me.amana_id) {
+      return renderShell('<div class="card"><h2 class="h2">لم يتم ربط حسابك بأمانة بعد</h2><p class="muted">اطلب من مدير الدفعة أن يربط حسابك بأمانتك من تبويب «الأمناء والحسابات».</p></div>');
+    }
+    if (isSuper) {
+      h += '<div class="tabs"><button data-act="tab" data-v="amanat" class="' + (S.tab === 'amanat' ? 'on' : '') + '">الأمانات</button>' +
+        '<button data-act="tab" data-v="users" class="' + (S.tab === 'users' ? 'on' : '') + '">الأمناء والحسابات</button></div>';
+    }
+    if (isSuper && S.tab === 'users') { renderShell(h + '<div id="users" class="card"><p class="muted">جارٍ التحميل…</p></div>'); return loadUsers(); }
+
+    var a = S.amanat.filter(function (x) { return x.id === S.sel; })[0];
+    var side = '';
+    if (isSuper) {
+      side = '<nav class="side" aria-label="الأمانات">' + S.amanat.map(function (x) {
+        return '<button data-act="sel" data-v="' + esc(x.id) + '" class="' + (x.id === S.sel ? 'on' : '') + (x.visible ? '' : ' off') + '">' + esc(x.name) + '</button>';
+      }).join('') + '</nav>';
+    }
+    var main = '';
+    if (!a) main = '<div class="card">لا توجد أمانة.</div>';
+    else {
+      main = '<div class="card"><h2 class="h2">' + esc(a.name) + '</h2><p class="muted">أنت تعدّل صفحة هذه الأمانة. التعديلات تظهر للزوار بعد الضغط على «حفظ» في كل نافذة.</p>';
+      if (isSuper) {
+        main += '<div class="row"><div><label>اسم الأمانة</label><input type="text" id="an" value="' + esc(a.name) + '"></div>' +
+          '<div><label>الجملة تحت الاسم</label><input type="text" id="at" value="' + esc(a.tagline) + '"></div>' +
+          '<div class="fit"><label>الشكل والألوان</label><select id="ak">' + Object.keys(KINDS).map(function (k) { return '<option value="' + k + '"' + (a.kind === k ? ' selected' : '') + '>' + KINDS[k] + '</option>'; }).join('') + '</select></div>' +
+          '<div class="fit"><label class="chk"><input type="checkbox" id="av"' + (a.visible ? ' checked' : '') + '> ظاهرة للزوار</label></div>' +
+          '<div class="fit"><button class="btn" data-act="saveAmana">حفظ الأمانة</button></div></div>';
+      }
+      main += '<hr style="border:0;border-top:1px solid var(--line);margin:18px 0 6px">' +
+        '<div class="row"><div><label>إضافة نافذة جديدة — العنوان</label><input type="text" id="nt" placeholder="مثال: إعلانات مهمة"></div>' +
+        '<div class="fit"><label>النوع</label><select id="ny">' + Object.keys(TYPES).map(function (k) { return '<option value="' + k + '">' + TYPES[k] + '</option>'; }).join('') + '</select></div>' +
+        '<div class="fit"><button class="btn" data-act="addBlock">+ إضافة النافذة</button></div></div></div>';
+      main += S.blocks.map(blockHTML).join('') || '<div class="card" style="margin-top:16px"><p class="muted">لا توجد نوافذ بعد. أضف أول نافذة من الأعلى.</p></div>';
+    }
+    renderShell(h + (isSuper ? '<div class="layout">' + side + '<div>' + main + '</div></div>' : main));
+  }
+
+  function itemHTML(b, bi, it, ii) {
+    var p = 'data-b="' + bi + '" data-i="' + ii + '"';
+    var rm = '<button class="btn bad sm" data-act="delItem" data-b="' + bi + '" data-i="' + ii + '" aria-label="حذف العنصر">حذف</button>';
+    if (b.type === 'members') return '<div class="item"><div><label>الاسم</label><input type="text" ' + p + ' data-k="name" value="' + esc(it.name) + '"></div><div><label>المنصب</label><input type="text" ' + p + ' data-k="role" value="' + esc(it.role) + '"></div>' + rm + '</div>';
+    if (b.type === 'links') return '<div class="item"><div><label>عنوان الرابط</label><input type="text" ' + p + ' data-k="label" value="' + esc(it.label) + '"></div><div><label>الرابط (https://...)</label><input type="url" dir="ltr" ' + p + ' data-k="url" value="' + esc(it.url) + '"></div>' + rm + '</div>';
+    return '<div class="item"><div><label>العنوان</label><input type="text" ' + p + ' data-k="title" value="' + esc(it.title) + '"></div><div><label>التاريخ (اختياري)</label><input type="text" ' + p + ' data-k="date" value="' + esc(it.date) + '"></div>' + rm +
+      '<div class="full"><label>الرسالة</label><textarea ' + p + ' data-k="body">' + esc(it.body) + '</textarea></div></div>';
+  }
+
+  function blockHTML(b, bi) {
+    var h = '<section class="card blk' + (b.visible ? '' : ' hid') + '"><div class="head"><span class="badge">' + TYPES[b.type] + '</span>' +
+      '<label class="chk" style="margin-inline-start:auto"><input type="checkbox" data-b="' + bi + '" data-f="visible"' + (b.visible ? ' checked' : '') + '> ظاهرة</label></div>' +
+      '<div class="row"><div><label>عنوان النافذة</label><input type="text" data-b="' + bi + '" data-f="title" value="' + esc(b.title) + '"></div>' +
+      '<div class="fit"><label>الأيقونة</label><select data-b="' + bi + '" data-f="icon">' + Object.keys(ICONS).map(function (k) { return '<option value="' + k + '"' + (b.icon === k ? ' selected' : '') + '>' + ICONS[k] + '</option>'; }).join('') + '</select></div></div>' +
+      '<label>وصف قصير</label><input type="text" data-b="' + bi + '" data-f="description" value="' + esc(b.description) + '">';
+    if (b.type === 'text') h += '<label>النص</label><textarea data-b="' + bi + '" data-f="text" style="min-height:120px">' + esc(b.content.text) + '</textarea>';
+    else {
+      h += b.content.items.map(function (it, ii) { return itemHTML(b, bi, it, ii); }).join('');
+      h += '<div style="margin-top:10px"><button class="btn ghost sm" data-act="addItem" data-b="' + bi + '">+ ' + (b.type === 'members' ? 'إضافة اسم' : b.type === 'links' ? 'إضافة رابط' : 'إضافة رسالة') + '</button></div>';
+    }
+    h += '<div class="tools"><button class="btn" data-act="saveBlock" data-b="' + bi + '">حفظ</button>' +
+      '<button class="btn ghost sm" data-act="up" data-b="' + bi + '"' + (bi === 0 ? ' disabled' : '') + '>↑ للأعلى</button>' +
+      '<button class="btn ghost sm" data-act="down" data-b="' + bi + '"' + (bi === S.blocks.length - 1 ? ' disabled' : '') + '>↓ للأسفل</button>' +
+      '<span class="sp"></span><button class="btn bad sm" data-act="delBlock" data-b="' + bi + '">حذف النافذة</button></div></section>';
+    return h;
+  }
+
+  /* ---------- المستخدمون (للمدير العام) ---------- */
+  function loadUsers() {
+    sb.from('profiles').select('*').order('email').then(function (r) {
+      if (r.error) return fail(r.error);
+      S.users = r.data;
+      var opts = function (sel) {
+        return '<option value="">— بدون أمانة —</option>' + S.amanat.map(function (a) { return '<option value="' + esc(a.id) + '"' + (sel === a.id ? ' selected' : '') + '>' + esc(a.name) + '</option>'; }).join('');
+      };
+      var rows = S.users.map(function (u, i) {
+        var me = u.id === S.me.id;
+        return '<tr><td dir="ltr" style="text-align:start">' + esc(u.email) + (me ? ' <span class="badge">أنت</span>' : '') + '</td>' +
+          '<td><select data-u="' + i + '" data-f="role"' + (me ? ' disabled' : '') + '><option value="amin"' + (u.role === 'amin' ? ' selected' : '') + '>أمين</option><option value="super"' + (u.role === 'super' ? ' selected' : '') + '>مدير عام</option></select></td>' +
+          '<td><select data-u="' + i + '" data-f="amana_id"' + (u.role === 'super' ? ' disabled' : '') + '>' + opts(u.amana_id) + '</select></td>' +
+          '<td><button class="btn sm" data-act="saveUser" data-u="' + i + '">حفظ</button></td></tr>';
+      }).join('');
+      document.getElementById('users').innerHTML =
+        '<h2 class="h2">الأمناء والحسابات</h2><p class="muted">اربط كل أمين بأمانته. تغيير الأمانة يسحب صلاحية الأمين القديم فوراً ويعطيها للجديد.</p>' +
+        '<div style="overflow-x:auto"><table><thead><tr><th>البريد</th><th>الصلاحية</th><th>الأمانة</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        '<div class="note"><b>لإضافة أمين جديد:</b> من لوحة Supabase ← Authentication ← Users ← Add user (بريد وكلمة سر)، ثم ارجع هنا وحدّث الصفحة وسيظهر في الجدول لتربطه بأمانته.</div>';
+    });
+  }
+
+  /* ---------- الأحداث ---------- */
+  root.addEventListener('input', function (e) {
+    var t = e.target, bi = t.dataset.b, ui = t.dataset.u;
+    if (ui !== undefined) { var u = S.users[+ui]; u[t.dataset.f] = t.value || null; if (t.dataset.f === 'role') { var row = t.closest('tr').querySelectorAll('select')[1]; row.disabled = t.value === 'super'; } return; }
+    if (bi === undefined) return;
+    var b = S.blocks[+bi];
+    if (t.dataset.i !== undefined) { b.content.items[+t.dataset.i][t.dataset.k] = t.value; return; }
+    var f = t.dataset.f;
+    if (f === 'visible') { b.visible = t.checked; t.closest('.blk').classList.toggle('hid', !t.checked); }
+    else if (f === 'text') b.content.text = t.value;
+    else b[f] = t.value;
+  });
+
+  function newItem(type) {
+    return type === 'members' ? { name: '', role: '' } : type === 'links' ? { label: '', url: 'https://' } : { title: '', body: '', date: '' };
+  }
+  function renumber() {
+    var jobs = [];
+    S.blocks.forEach(function (b, i) {
+      if (b.sort !== i + 1) { b.sort = i + 1; jobs.push(sb.from('blocks').update({ sort: b.sort }).eq('id', b.id)); }
+    });
+    return Promise.all(jobs).then(function (rs) { rs.forEach(function (r) { if (r.error) throw r.error; }); });
+  }
+
+  root.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+    var act = el.dataset.act, bi = +el.dataset.b, b = S.blocks[bi];
+    if (act === 'logout') return sb.auth.signOut().then(function () { S.me = null; showLogin(); });
+    if (act === 'tab') { S.tab = el.dataset.v; return render(); }
+    if (act === 'sel') { S.sel = el.dataset.v; return loadBlocks().then(render).catch(fail); }
+    if (act === 'addItem') { b.content.items.push(newItem(b.type)); return render(); }
+    if (act === 'delItem') { b.content.items.splice(+el.dataset.i, 1); return render(); }
+
+    if (act === 'saveAmana') {
+      var a = S.amanat.filter(function (x) { return x.id === S.sel; })[0];
+      var patch = { name: document.getElementById('an').value.trim(), tagline: document.getElementById('at').value.trim(), kind: document.getElementById('ak').value, visible: document.getElementById('av').checked };
+      if (!patch.name) return toast('اسم الأمانة مطلوب', true);
+      return sb.from('amanat').update(patch).eq('id', a.id).then(function (r) { if (r.error) return fail(r.error); Object.assign(a, patch); toast('تم حفظ الأمانة'); render(); });
+    }
+    if (act === 'addBlock') {
+      var title = document.getElementById('nt').value.trim(), type = document.getElementById('ny').value;
+      if (!title) return toast('اكتب عنوان النافذة', true);
+      var row = { amana_id: S.sel, type: type, title: title, description: '', icon: DEFICON[type], content: type === 'text' ? { text: '' } : { items: [] }, sort: S.blocks.length + 1 };
+      return sb.from('blocks').insert(row).select().single().then(function (r) {
+        if (r.error) return fail(r.error);
+        S.blocks.push(r.data); toast('أُضيفت النافذة'); return loadBlocks().then(render);
+      });
+    }
+    if (act === 'saveBlock') {
+      var c = b.type === 'text' ? { text: b.content.text } : { items: b.content.items.filter(function (it) { return Object.keys(it).some(function (k) { return String(it[k] || '').trim() && !(k === 'url' && it[k] === 'https://'); }); }) };
+      el.disabled = true;
+      return sb.from('blocks').update({ title: b.title.trim() || 'بدون عنوان', description: (b.description || '').trim(), icon: b.icon, content: c, visible: b.visible, updated_at: new Date().toISOString() }).eq('id', b.id)
+        .then(function (r) { el.disabled = false; if (r.error) return fail(r.error); b.content = c; toast('تم الحفظ'); render(); });
+    }
+    if (act === 'delBlock') {
+      if (!confirm('حذف نافذة «' + b.title + '» نهائياً؟')) return;
+      return sb.from('blocks').delete().eq('id', b.id).then(function (r) { if (r.error) return fail(r.error); S.blocks.splice(bi, 1); return renumber().then(function () { toast('حُذفت'); render(); }); }).catch(fail);
+    }
+    if (act === 'up' || act === 'down') {
+      var j = act === 'up' ? bi - 1 : bi + 1; if (j < 0 || j >= S.blocks.length) return;
+      var tmp = S.blocks[bi]; S.blocks[bi] = S.blocks[j]; S.blocks[j] = tmp;
+      return renumber().then(render).catch(function (err) { fail(err); loadBlocks().then(render); });
+    }
+    if (act === 'saveUser') {
+      var u = S.users[+el.dataset.u];
+      var role = u.role === 'super' ? 'super' : 'amin';
+      return sb.from('profiles').update({ role: role, amana_id: role === 'super' ? null : (u.amana_id || null) }).eq('id', u.id)
+        .then(function (r) { if (r.error) return fail(r.error); toast('تم تحديث ' + u.email); });
+    }
+  });
+
+  boot();
+})();
+</script>
+</body>
+</html>
